@@ -10,17 +10,21 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - SECRET_KEY_BASE=nonsecret
+      - SECRET_KEY_BASE=f4888a25d7ec43a3e0e3a1cf6780c272
       - DATABASE_URL=postgresql://postgres:password@postgresql:5432/phoenix
       - RAILS_SERVE_STATIC_FILES=1
       - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
       - SHISA_API_URL=http://admin:secret@shisa:3100/api
       - DATA_API_CONNECTOR_URL=http://firebird:4001/api
+      - SPHINX_PUBLIC_URL=http://localhost:3200
+      - PHOENIX_OAUTH_SHISA_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
+      - PHOENIX_OAUTH_SPHINX_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
     volumes:
       - ./phoenix:/home/box/phoenix/standalone
 
   firebird:
     image: xapixio/firebird:$VERSION
+    user: root
     links:
       - postgresql
     ports:
@@ -28,14 +32,27 @@ services:
       - "4002:4002"
     environment:
       - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
+    volumes:
+      - "fb-logs:/home/box/firebird/logs"
     command: run all
+
+  fb-fluent:
+    image: fluent/fluent-bit:0.13
+    links:
+      - elastic
+    environment:
+      - FLUENT_ELASTICSEARCH_HOST=elastic
+      - FLUENT_ELASTICSEARCH_PORT
+    volumes:
+      - "fb-logs:/var/log/firebird"
+      - "./fb-fluent:/fluent-bit/etc/"
 
   shisa:
     image: xapixio/shisa:$VERSION
     ports:
       - "3100:3100"
     environment:
-      - SECRET_KEY_BASE=nonsecret
+      - SECRET_KEY_BASE=f4888a25d7ec43a3e0e3a1cf6780c272
       - RAILS_SERVE_STATIC_FILES=1
       - DATABASE_URL=postgresql://postgres:password@postgresql:5432/shisa
       - SHISA_API_SECRET=secret
@@ -44,3 +61,24 @@ services:
     image: postgres:9.6.10-alpine
     environment:
       - POSTGRES_PASSWORD=password
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    environment:
+      - "discovery.type=single-node"
+
+  sphinx:
+    image: xapixio/sphinx:$VERSION
+    ports:
+      - "3200:3200"
+    links:
+      - elastic
+      - phoenix
+    environment:
+      - SECRET_KEY_BASE=f4888a25d7ec43a3e0e3a1cf6780c272
+      - ELASTICSEARCH_HOST=elastic
+      - PHOENIX_OAUTH_API_URL=http://phoenix:3000/api
+      - PHOENIX_OAUTH_SPHINX_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
+
+volumes:
+  fb-logs:
