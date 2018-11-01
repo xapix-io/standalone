@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  phoenix:
+    image: xapixio/phoenix:$VERSION
+    links:
+      - postgresql
+      - shisa
+      - firebird
+    ports:
+      - "3000:3000"
+    environment:
+      - SECRET_KEY_BASE=nonsecret
+      - DATABASE_URL=postgresql://postgres:password@postgresql:5432/phoenix
+      - RAILS_SERVE_STATIC_FILES=1
+      - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
+      - SHISA_API_URL=http://admin:secret@shisa:3100/api
+      - DATA_API_CONNECTOR_URL=http://firebird:4001/api
+    volumes:
+      - ./phoenix:/home/box/phoenix/standalone
+
+  firebird:
+    image: xapixio/firebird:$VERSION
+    links:
+      - postgresql
+    ports:
+      - "4001:4001"
+      - "4002:4002"
+    environment:
+      - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
+    command: run all
+
+  shisa:
+    image: xapixio/shisa:$VERSION
+    ports:
+      - "3100:3100"
+    environment:
+      - SECRET_KEY_BASE=nonsecret
+      - RAILS_SERVE_STATIC_FILES=1
+      - DATABASE_URL=postgresql://postgres:password@postgresql:5432/shisa
+      - SHISA_API_SECRET=secret
+
+  postgresql:
+    image: postgres:9.6.10-alpine
+    environment:
+      - POSTGRES_PASSWORD=password

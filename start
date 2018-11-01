@@ -1,0 +1,7 @@
+#!/bin/sh -xe
+
+docker-compose run --rm firebird db:migrate
+docker-compose run --rm phoenix bundle exec rake db:create db:migrate
+docker-compose run --rm shisa bundle exec rake db:create db:migrate
+docker-compose run --rm phoenix bundle exec ruby standalone/seeds.rb
+docker-compose up
