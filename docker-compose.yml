@@ -2,7 +2,7 @@ version: '3'
 
 services:
   phoenix:
-    image: xapixio/phoenix:$VERSION
+    image: xapixio/phoenix:$PHOENIX_VERSION
     links:
       - postgresql
       - shisa
@@ -25,7 +25,7 @@ services:
       - ./phoenix:/home/box/phoenix/standalone
 
   firebird:
-    image: xapixio/firebird:$VERSION
+    image: xapixio/firebird:$FIREBIRD_VERSION
     user: root
     links:
       - postgresql
@@ -51,7 +51,7 @@ services:
       - "./fb-fluent:/fluent-bit/etc/"
 
   shisa:
-    image: xapixio/shisa:$VERSION
+    image: xapixio/shisa:$SHISA_VERSION
     ports:
       - "3100:3100"
     environment:
@@ -71,7 +71,7 @@ services:
       - "discovery.type=single-node"
 
   sphinx:
-    image: xapixio/sphinx:$VERSION
+    image: xapixio/sphinx:$SPHINX_VERSION
     ports:
       - "3200:3200"
     links:
