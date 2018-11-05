@@ -7,6 +7,7 @@ services:
       - postgresql
       - shisa
       - firebird
+      - reqres
     ports:
       - "3000:3000"
     environment:
@@ -27,6 +28,7 @@ services:
     user: root
     links:
       - postgresql
+      - reqres
     ports:
       - "4001:4001"
       - "4002:4002"
@@ -79,6 +81,11 @@ services:
       - ELASTICSEARCH_HOST=elastic
       - PHOENIX_OAUTH_API_URL=http://phoenix:3000/api
       - PHOENIX_OAUTH_SPHINX_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
+
+  reqres:
+    image: xapixio/reqres:develop
+    ports:
+      - "5000:5000"
 
 volumes:
   fb-logs:
