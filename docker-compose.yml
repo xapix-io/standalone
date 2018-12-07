@@ -15,6 +15,7 @@ services:
       - DATABASE_URL=postgresql://postgres:password@postgresql:5432/phoenix
       - RAILS_SERVE_STATIC_FILES=1
       - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
+      - UNAUTHENTICATED_SHISA_BASE_URL=http://shisa:3100
       - SHISA_API_URL=http://admin:secret@shisa:3100/api
       - DATA_API_CONNECTOR_URL=http://firebird:4001/api
       - DATA_API_PUBLIC_HOSTNAME=firebird:4002
@@ -59,6 +60,9 @@ services:
       - RAILS_SERVE_STATIC_FILES=1
       - DATABASE_URL=postgresql://postgres:password@postgresql:5432/shisa
       - SHISA_API_SECRET=secret
+      - MAILER_DEFAULT_HOST=test.xapix.io
+      - MAILER_DELIVERY_METHOD=file
+      - MAILER_FROM_EMAIL=mailer@shisa.xapix.io
 
   postgresql:
     image: postgres:9.6.10-alpine
