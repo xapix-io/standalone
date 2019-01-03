@@ -37,7 +37,7 @@ services:
       - "4002:4002"
     environment:
       - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
-      - ES__ENTRYPOINT=http://elastic:9200
+      - ELASTICSEARCH__ENTRYPOINT=http://elastic:9200
     volumes:
       - "fb-logs:/home/box/firebird/logs"
     command: run all
