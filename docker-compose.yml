@@ -7,6 +7,7 @@ services:
       - postgresql
       - shisa
       - firebird
+      - elastic
       - reqres
     ports:
       - "3000:3000"
@@ -38,20 +39,7 @@ services:
     environment:
       - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
       - ELASTICSEARCH__ENTRYPOINT=http://elastic:9200
-    volumes:
-      - "fb-logs:/home/box/firebird/logs"
     command: run all
-
-  fb-fluent:
-    image: fluent/fluent-bit:0.13
-    links:
-      - elastic
-    environment:
-      - FLUENT_ELASTICSEARCH_HOST=elastic
-      - FLUENT_ELASTICSEARCH_PORT
-    volumes:
-      - "fb-logs:/var/log/firebird"
-      - "./fb-fluent:/fluent-bit/etc/"
 
   shisa:
     image: xapixio/shisa:$SHISA_VERSION
@@ -76,24 +64,8 @@ services:
     environment:
       - "discovery.type=single-node"
 
-  sphinx:
-    image: xapixio/sphinx:$SPHINX_VERSION
-    ports:
-      - "3200:3200"
-    links:
-      - elastic
-      - phoenix
-    environment:
-      - SECRET_KEY_BASE=f4888a25d7ec43a3e0e3a1cf6780c272
-      - ELASTICSEARCH_HOST=elastic
-      - PHOENIX_OAUTH_API_URL=http://phoenix:3000/api
-      - PHOENIX_OAUTH_SPHINX_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
-
   reqres:
     image: xapixio/reqres:develop
     ports:
       - "5000:5000"
       - "5001:5001"
-
-volumes:
-  fb-logs:
