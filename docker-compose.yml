@@ -6,7 +6,7 @@ services:
     links:
       - postgresql
       - shisa
-      - firebird
+      - clojud
       - elastic
       - reqres
     ports:
@@ -18,26 +18,80 @@ services:
       - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
       - UNAUTHENTICATED_SHISA_BASE_URL=http://shisa:3100
       - SHISA_API_URL=http://admin:secret@shisa:3100/api
-      - DATA_API_CONNECTOR_URL=http://firebird:4001/api
+      - DATA_API_CONNECTOR_URL=http://clojud:4001/api
       - DATA_API_PUBLIC_HOSTNAME=localhost:4002
       - PHOENIX_OAUTH_SHISA_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
     volumes:
       - ./phoenix:/home/box/phoenix/standalone
 
-  firebird:
-    image: xapixio/firebird:$FIREBIRD_VERSION
-    user: root
+  zookeeper:
+    image: confluentinc/cp-zookeeper:4.1.1-2
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:4.1.1-2
+    restart: on-failure
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9093,EXTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9093, EXTERNAL://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 60000
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+  connect:
+    image: xapixio/clojud-connect:develop
     links:
-      - postgresql
-      - reqres
       - elastic
     ports:
-      - "4001:4001"
-      - "4002:4002"
+      - 8086:8086
     environment:
-      - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
-      - ELASTICSEARCH__ENTRYPOINT=http://elastic:9200
-    command: run all
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9093
+      CONNECT_REST_PORT: 8086
+      CONNECT_GROUP_ID: kafka-connect-dev
+      CONNECT_CONFIG_STORAGE_TOPIC: kafka-connect-config
+      CONNECT_OFFSET_STORAGE_TOPIC: kafka-connect-offset
+      CONNECT_STATUS_STORAGE_TOPIC: kafka-connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
+      CONNECT_REST_ADVERTISED_HOST_NAME: localhost
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+
+  clojud:
+    image: xapixio/clojud:$CLOJUD_VERSION
+    links:
+      - elastic
+      - connect
+    volumes:
+      - ~/Documents/xapix/work/clojud/resources:/root/resources
+    ports:
+      - 4002:4002
+      - 4001:4001
+    environment:
+      CLOJUD_ELASTIC_ENDPOINT: http://elastic:9200
+      CLOJUD_ANALYTICS_INDEX_PREFIX: xapix-analytics
+      CLOJUD_CONNECT_ELASTIC_ENDPOINT: http://elastic:9200
+      CLOJUD_KAFKA_CONNECT_ENDPOINT: http://connect:8086
+      CLOJUD_API_PORT: 4020
+      CLOJUD_PUBLIC_KEY: /root/resources/ring-jwt-middleware.pub
+      CLOJUD_PRIVATE_KEY: /root/resources/ring-jwt-middleware.key
+      CLOJUD_HTTP_GATEWAY_PORT: 4002
+      CLOJUD_XAPIX_PORT: 4001
+      CLOJUD_APP_ID: clojud_local
+      CLOJUD_KAFKA: kafka:9092
+      CLOJUD_ME: localhost:4002
 
   shisa:
     image: xapixio/shisa:$SHISA_VERSION
@@ -61,6 +115,8 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
     environment:
       - "discovery.type=single-node"
+    ports:
+      - 9200:9200
 
   reqres:
     image: xapixio/reqres:develop
