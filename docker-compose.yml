@@ -75,7 +75,7 @@ services:
       - elastic
       - connect
     volumes:
-      - ~/Documents/xapix/work/clojud/resources:/root/resources
+      - ./resources:/root/resources
     ports:
       - 4002:4002
       - 4001:4001
