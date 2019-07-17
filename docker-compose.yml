@@ -85,6 +85,7 @@ services:
       CLOJUD_CONNECT_ELASTIC_ENDPOINT: http://elastic:9200
       CLOJUD_KAFKA_CONNECT_ENDPOINT: http://connect:8086
       CLOJUD_API_PORT: 4020
+      CLOJUD_CIPHER_KEY: "secret key"
       CLOJUD_PUBLIC_KEY: /root/resources/ring-jwt-middleware.pub
       CLOJUD_PRIVATE_KEY: /root/resources/ring-jwt-middleware.key
       CLOJUD_HTTP_GATEWAY_PORT: 4002
