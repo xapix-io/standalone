@@ -1,5 +1,6 @@
 #!/bin/sh -xe
 
+source .env
 ./prepare
 docker-compose run --rm phoenix bundle exec ruby standalone/seeds.rb
 docker-compose up

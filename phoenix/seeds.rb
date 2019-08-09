@@ -1,28 +1,26 @@
 require_relative '../config/environment'
 
-u = User.find_by(email: 'admin@xapix.io') ||
-    User.new(name: 'Oliver',
-             email: 'admin@xapix.io',
-             password: 'admin1234',
-             password_confirmation: 'admin1234').tap do |o|
-  o.skip_confirmation!
-  o.save!
+user = User.find_or_create_by!(email: 'admin@xapix.io') do |user|
+  user.name = 'Demo'
+  user.password = 'admin1234'
+  user.password_confirmation = 'admin1234'
+  user.skip_confirmation!
 end
 
 spec = YAML.load_file("standalone/ds.yml")
 
-project = u.organizations.first.projects.find_by(slug: 'demo-project') ||
-          u.organizations.first.projects.create!(name: 'Demo Project',
-                                                 slug: 'demo-project')
+org = user.organizations.first
+project = org.projects.find_or_create_by!(slug: 'giphy') { |prj| prj.name = 'Giphy Demo Project' }
 
-project.authentication_sets.find_by(name: 'Demo Auth Set') ||
-  project.authentication_sets.create!(name: 'Demo Auth Set',
-                                      type: 'AuthenticationSet::ApiKey',
-                                      encrypted_parameters: AuthenticationSet::Basic.encrypt_parameters("{\"parameter_type\":\"query\",\"parameter_name\":\"x-api-key\", \"parameter_value\":\"1234\"}", iv: "5Ypo/v2xBnHM8Of1\n".unpack('m').first),
-                                      encrypted_parameters_iv: "5Ypo/v2xBnHM8Of1\n")
+project.auth_credentials.find_or_create_by!(type: 'AuthCredential::Token', slug: 'giphy-token') do |cred|
+  cred.name = 'Giphy Token'
+  cred.token = '1234'
+end
 
-Import::OpenapiTwo.call(project, spec).each do |ds_id|
+res = Import::OpenapiTwo.call(project, spec)
+res[:new_ds_ids].each do |ds_id|
   ds = DataSource.find(ds_id)
+  puts "Mapping data source #{ds.name}"
   RestJsonDs2RestJsonEpImport.call(project, ds)
 end
 
