@@ -23,5 +23,3 @@ res[:new_ds_ids].each do |ds_id|
   puts "Mapping data source #{ds.name}"
   RestJsonDs2RestJsonEpImport.call(project, ds)
 end
-
-PublishProject.call(project)
