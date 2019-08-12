@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  data-api:
+    image: xapixio/clojud:$CLOJUD_VERSION
+    links:
+      - kafka
+      - connect
+    ports:
+      - "4001:4001"
+      - "4002:4002"
+    environment:
+      CLOJUD_ME: localhost:4002
+      CLOJUD_KAFKA: kafka:9092
+      CLOJUD_APP_ID: clojud-local
+      CLOJUD_TOPIC_PREFIX: local
+      CLOJUD_ELASTIC_ENDPOINT: http://elastic:9200
+      CLOJUD_KAFKA_CONNECT_ENDPOINT: http://connect:8086
+      CLOJUD_XAPIX_PORT: 4001
+      CLOJUD_API_PORT: 4000
+      CLOJUD_HTTP_GATEWAY_PORT: 4002
+      CLOJUD_CIPHER_KEY: secret
+      CLOJUD_PUBLIC_KEY: /etc/clojud/jwt_ecdsa.pub
+      CLOJUD_PRIVATE_KEY: /etc/clojud/jwt_ecdsa.key
+    volumes:
+      - ./jwtkeys:/etc/clojud:delegated
+
+  kafka:
+    image: confluentinc/cp-kafka:4.1.1-2
+    ports:
+      - "9092:9092"
+    links:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9093,EXTERNAL://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9093, EXTERNAL://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: 60000
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+  connect:
+    image: xapixio/clojud-connect:develop
+    ports:
+      - "8086:8086"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9093
+      CONNECT_REST_PORT: 8086
+      CONNECT_GROUP_ID: kafka-connect-dev
+      CONNECT_CONFIG_STORAGE_TOPIC: kafka-connect-config
+      CONNECT_OFFSET_STORAGE_TOPIC: kafka-connect-offset
+      CONNECT_STATUS_STORAGE_TOPIC: kafka-connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/jars
+      CONNECT_REST_ADVERTISED_HOST_NAME: localhost
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      CONNECT_PLUGIN_PATH: /usr/share/java,/usr/share/confluent-hub-components
+    links:
+      - kafka
+      - elastic
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:4.1.1-2
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000

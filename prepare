@@ -1,5 +1,0 @@
-#!/bin/sh -xe
-
-docker-compose run --rm firebird db:migrate
-docker-compose run --rm phoenix bundle exec rake db:safe_setup
-docker-compose run --rm shisa bundle exec rake db:safe_setup

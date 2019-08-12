@@ -6,7 +6,7 @@ services:
     links:
       - postgresql
       - shisa
-      - firebird
+      - data-api
       - elastic
     ports:
       - "3000:3000"
@@ -17,28 +17,15 @@ services:
       - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
       - UNAUTHENTICATED_SHISA_BASE_URL=http://shisa:3100
       - SHISA_API_URL=http://admin:secret@shisa:3100/api
-      - DATA_API_CONNECTOR_URL=http://firebird:4001/api
+      - DATA_API_CONNECTOR_URL=http://data-api:4001/api
       - DATA_API_PUBLIC_HOSTNAME=localhost:4002
       - INSIGHTS_ES_URL=http://elastic:9200
       - PHOENIX_OAUTH_SHISA_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
       - PHOENIX_OAUTH_SPHINX_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
-      - FEATURES=without_email_confirmation,soap_endpoints,kafka_endpoints
+      - FEATURES=without_email_confirmation,soap_endpoints,kafka_endpoints,$DATA_API
     volumes:
       - ./phoenix:/home/box/phoenix/standalone:delegated
-
-  firebird:
-    image: xapixio/firebird:$FIREBIRD_VERSION
-    user: root
-    links:
-      - postgresql
-      - elastic
-    ports:
-      - "4001:4001"
-      - "4002:4002"
-    environment:
-      - DATASOURCE__JDBC_URL=jdbc:postgresql://postgresql:5432/postgres?user=postgres&password=password
-      - ELASTICSEARCH__ENTRYPOINT=http://elastic:9200
-    command: run all
+      - ./jwtkeys:/home/box/phoenix/config/firebird_keys:delegated
 
   shisa:
     image: xapixio/shisa:$SHISA_VERSION

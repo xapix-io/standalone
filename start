@@ -1,6 +1,11 @@
-#!/bin/sh -xe
+#!/bin/bash -xe
 
-source .env
-./prepare
-docker-compose run --rm phoenix bundle exec ruby standalone/seeds.rb
-docker-compose up
+export DATA_API=${DATA_API:-'firebird'}
+DOCKER_COMPOSE="docker-compose -f ./docker-compose.yml -f ./docker-compose-$DATA_API.yml"
+
+if [ $DATA_API = "firebird" ]; then $DOCKER_COMPOSE run --rm data-api db:migrate; fi
+$DOCKER_COMPOSE run --rm phoenix bundle exec rake db:safe_setup
+$DOCKER_COMPOSE run --rm shisa bundle exec rake db:safe_setup
+$DOCKER_COMPOSE run --rm phoenix bundle exec ruby standalone/seeds.rb
+
+$DOCKER_COMPOSE up
