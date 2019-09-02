@@ -1,11 +1,10 @@
 #!/bin/bash -xe
 
-export DATA_API=${DATA_API:-'clojud'}
-DOCKER_COMPOSE="docker-compose -f ./docker-compose.yml -f ./docker-compose-$DATA_API.yml"
+docker-compose up -d postgresql
+sleep 5
 
-if [ $DATA_API = "firebird" ]; then $DOCKER_COMPOSE run --rm data-api db:migrate; fi
-$DOCKER_COMPOSE run --rm phoenix bundle exec rake db:safe_setup
-$DOCKER_COMPOSE run --rm shisa bundle exec rake db:safe_setup
-$DOCKER_COMPOSE run --rm phoenix bundle exec ruby standalone/seeds.rb
+docker-compose run --rm phoenix bundle exec rake db:safe_setup
+docker-compose run --rm shisa bundle exec rake db:safe_setup
+docker-compose run --rm phoenix bundle exec ruby standalone/seeds.rb
 
-$DOCKER_COMPOSE up
+docker-compose up
