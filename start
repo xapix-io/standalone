@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-export DATA_API=${DATA_API:-'firebird'}
+export DATA_API=${DATA_API:-'clojud'}
 DOCKER_COMPOSE="docker-compose -f ./docker-compose.yml -f ./docker-compose-$DATA_API.yml"
 
 if [ $DATA_API = "firebird" ]; then $DOCKER_COMPOSE run --rm data-api db:migrate; fi
