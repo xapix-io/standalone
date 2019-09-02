@@ -101,7 +101,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
   connect:
-    image: xapixio/clojud-connect:develop
+    image: xapixio/clojud-connect:$CLOJUD_VERSION
     ports:
       - "8086:8086"
     environment:
