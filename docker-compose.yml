@@ -40,7 +40,7 @@ services:
       - MAILER_FROM_EMAIL=mailer@shisa.xapix.io
 
   postgresql:
-    image: postgres:10
+    image: postgres:10-alpine
     environment:
       - POSTGRES_PASSWORD=password
     volumes:
