@@ -2,7 +2,7 @@ version: '3'
 
 services:
   phoenix:
-    image: xapixio/phoenix:$PHOENIX_VERSION
+    image: docker.pkg.github.com/xapix-io/phoenix/phoenix:$PHOENIX_VERSION
     links:
       - postgresql
     ports:
@@ -25,7 +25,7 @@ services:
       - ./jwtkeys:/home/box/phoenix/config/firebird_keys:delegated
 
   shisa:
-    image: xapixio/shisa:$SHISA_VERSION
+    image: docker.pkg.github.com/xapix-io/shisa/shisa:$SHISA_VERSION
     links:
       - postgresql
     ports:
@@ -61,7 +61,7 @@ services:
         hard: -1
 
   data-api:
-    image: xapixio/clojud:$CLOJUD_VERSION
+    image: docker.pkg.github.com/xapix-io/clojud/clojud:$CLOJUD_VERSION
     links:
       - kafka
       - connect
@@ -101,7 +101,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
   connect:
-    image: xapixio/clojud-connect:$CLOJUD_CONNECT_VERSION
+    image: docker.pkg.github.com/xapix-io/clojud-connect/clojud-connect:$CLOJUD_CONNECT_VERSION
     ports:
       - "8086:8086"
     environment:
