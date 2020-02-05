@@ -33,6 +33,7 @@ services:
     environment:
       - SECRET_KEY_BASE=f4888a25d7ec43a3e0e3a1cf6780c272
       - RAILS_SERVE_STATIC_FILES=1
+      - AUTHENTICATION_CRYPTO_KEY_32_BYTES=f4888a25d7ec43a3e0e3a1cf6780c272
       - DATABASE_URL=postgresql://postgres:password@postgresql:5432/shisa
       - SHISA_API_SECRET=secret
       - MAILER_DEFAULT_HOST=test.xapix.io
