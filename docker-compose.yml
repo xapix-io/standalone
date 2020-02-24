@@ -78,6 +78,7 @@ services:
       CLOJUD_XAPIX_PORT: 4001
       CLOJUD_API_PORT: 4000
       CLOJUD_HTTP_GATEWAY_PORT: 4002
+      CLOJUD_HTTP_GATEWAY_TIMEOUT: 80000
       CLOJUD_CIPHER_KEY: secret
       CLOJUD_PUBLIC_KEY: /etc/clojud/jwt_ecdsa.pub
       CLOJUD_PRIVATE_KEY: /etc/clojud/jwt_ecdsa.key
