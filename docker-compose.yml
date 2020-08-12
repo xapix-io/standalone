@@ -19,9 +19,11 @@ services:
       - INSIGHTS_ES_URL=http://elastic:9200
       - PHOENIX_OAUTH_SHISA_SECRET=ffa10a2a1082b12ff40f338857510dcd6203a30bf224eb2a5a05734ba7fbdd36f5cf3848e4bb5bbf1e1bb74c4556454e7c1a9323032277434195425251195fd0
       - ENABLED_FEATURES=without_email_confirmation,soap_endpoints,kafka_endpoints,clojud
+      - PHOENIX_PUBLIC_URL=http://phoenix:3000/
     volumes:
       - ./phoenix:/home/box/phoenix/standalone:delegated
       - ./jwtkeys:/home/box/phoenix/config/firebird_keys:delegated
+      - ./capbackeys:/home/box/phoenix/config/capbac_keys:delegated
 
   shisa:
     image: $SHISA_IMAGE:$SHISA_VERSION
@@ -79,10 +81,13 @@ services:
       CLOJUD_API_PORT: 4000
       CLOJUD_HTTP_GATEWAY_PORT: 4002
       CLOJUD_CIPHER_KEY: secret
-      CLOJUD_PUBLIC_KEY: /etc/clojud/jwt_ecdsa.pub
-      CLOJUD_PRIVATE_KEY: /etc/clojud/jwt_ecdsa.key
+      CLOJUD_PUBLIC_KEY: /etc/clojud/jwtkeys/jwt_ecdsa.pub
+      CLOJUD_PRIVATE_KEY: /etc/clojud/jwtkeys/jwt_ecdsa.key
+      ROOT_CLIENT_ID: http://phoenix:3000/
+      ROOT_CLIENT_PUBLIC_KEY: /etc/clojud/capbac/client.pub
     volumes:
-      - ./jwtkeys:/etc/clojud:delegated
+      - ./jwtkeys:/etc/clojud/jwtkeys:delegated
+      - ./capbackeys:/etc/clojud/capbac:delegated
 
   kafka:
     image: confluentinc/cp-kafka:4.1.1-2
